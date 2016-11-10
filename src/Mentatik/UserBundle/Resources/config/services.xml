@@ -5,9 +5,11 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="graph_entitymanager" class="Mentatik\GraphDB\GraphEntityManager">
+        <service id="graph_entitymanager" class="GraphAware\Neo4j\OGM\EntityManager">
+            <factory class="GraphAware\Neo4j\OGM\EntityManager"  method="create" />
             <argument>http://%neo4j-user%:%neo4j-pass%@%neo4j-host%:%neo4j-port%</argument>
         </service>
+        
     </services>
 
 </container>

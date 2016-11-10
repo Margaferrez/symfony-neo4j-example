@@ -17,8 +17,7 @@ class AdminController extends Controller
 
     public function getUserRepository()
     {
-        $manager = $this->container->get('graph_entitymanager');
-        $this->em = $manager->getEm();
+        $this->em = $this->container->get('graph_entitymanager');
         $this->userRepository = $this->em->getRepository(User::class);
     }
 
