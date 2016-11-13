@@ -1,4 +1,3 @@
 mentatik_user:
-    resource: "@MentatikUserBundle/Resources/config/routing.xml"
-    prefix:   /
-
+    resource: "@MentatikUserBundle/Controller"
+    type:     annotation

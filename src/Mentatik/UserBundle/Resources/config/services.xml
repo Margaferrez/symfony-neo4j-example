@@ -9,7 +9,13 @@
             <factory class="GraphAware\Neo4j\OGM\EntityManager"  method="create" />
             <argument>http://%neo4j-user%:%neo4j-pass%@%neo4j-host%:%neo4j-port%</argument>
         </service>
-        
+
+        <service id="mentatik_user.admin_controller" class="Mentatik\UserBundle\Controller\AdminController">
+            <argument type="service" id="templating" />
+            <argument type="service" id="graph_entitymanager" />
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="router" />
+        </service>
     </services>
 
 </container>

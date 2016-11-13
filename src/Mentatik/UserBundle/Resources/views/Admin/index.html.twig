@@ -1,6 +1,6 @@
 <h1>Manage your users</h1>
 
-<p><a href="{{ path('Mentatik_user_admin_insert') }}">Add new user +</a></p>
+<p><a href="{{ path('mentatik_user_admin_insert') }}">Add new user +</a></p>
 
 <table>
     <tr>
@@ -16,8 +16,8 @@
         <td> {{ user.name }} </td>
         <td> {{ user.email }} </td>
         <td>
-            <a href="{{ path('Mentatik_user_admin_update', {'id': user.id}) }}">Edit</a>
-            <a href="{{ path('Mentatik_user_admin_delete', {'id': user.id}) }}">Delete</a>
+            <a href="{{ path('mentatik_user_admin_update', {'id': user.id}) }}">Edit</a>
+            <a href="{{ path('mentatik_user_admin_delete', {'id': user.id}) }}">Delete</a>
         </td>
     </tr>
 {% endfor %}

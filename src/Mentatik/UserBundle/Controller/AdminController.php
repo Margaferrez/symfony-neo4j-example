@@ -3,35 +3,85 @@
 namespace Mentatik\UserBundle\Controller;
 
 
+use GraphAware\Neo4j\OGM\EntityManager;
+use GraphAware\Neo4j\OGM\Tests\Integration\Model\Repository;
 use Mentatik\UserBundle\Form\UserType;
 use Mentatik\UserBundle\Model\User;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface as Templating;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 
-class AdminController extends Controller
+
+/**
+ * @Route("/admin", service="mentatik_user.admin_controller" )
+ */
+class AdminController
 {
+    /**
+     * @var EntityManager
+     */
     private $em;
+
+    /**
+     * @var Repository
+     */
     private $userRepository;
 
-    public function getUserRepository()
-    {
-        $this->em = $this->container->get('graph_entitymanager');
+    /**
+     * @var Templating
+     */
+    private $templating;
+
+    /**
+     * @var FormFactory
+     */
+    private $formFactory;
+
+    /**
+     * @var Router
+     */
+    private $router;
+
+
+    public function __construct(
+        Templating $templating,
+        EntityManager $graphEntityManager,
+        FormFactory $formFactory,
+        Router $router
+    ) {
+        $this->templating = $templating;
+        $this->em = $graphEntityManager;
         $this->userRepository = $this->em->getRepository(User::class);
+        $this->formFactory = $formFactory;
+        $this->router = $router;
     }
 
+    /**
+     * @Route("/user", name="mentatik_user_admin_list" )
+     * @Method({"GET"})
+     */
     public function indexAction()
     {
-        $this->getUserRepository();
         $user_list = $this->userRepository->findAll();
-        return $this->render('MentatikUserBundle:Admin:index.html.twig',
+        return $this->templating->renderResponse('MentatikUserBundle:Admin:index.html.twig',
             array('user_list'=> $user_list));
     }
 
+    /**
+     * @Route("/user/insert", name="mentatik_user_admin_insert" )
+     * @Method({"GET", "POST"})
+     * @param Request $request
+     * @return Response
+     */
     public function insertAction(Request $request)
     {
-        $this->getUserRepository();
         $user = new User();
         $form = $this->createUserForm($user, 'Create');
 
@@ -39,13 +89,19 @@ class AdminController extends Controller
             return $this->save_user_from_form($request, $form);
         }
 
-        return $this->render('MentatikUserBundle:Admin:form.html.twig',
+        return $this->templating->renderResponse('MentatikUserBundle:Admin:form.html.twig',
             array('form'=> $form->createView()));
     }
 
+    /**
+     * @Route("/user/{id}/update", name="mentatik_user_admin_update" )
+     * @Method({"GET", "POST"})
+     * @param Request $request
+     * @param int $id
+     * @return Response
+     */
     public function updateAction(Request $request, $id)
     {
-        $this->getUserRepository();
         $user = $this->userRepository->findOneById((int)$id);
         $form = $this->createUserForm($user, 'Update');
 
@@ -53,22 +109,27 @@ class AdminController extends Controller
             return $this->save_user_from_form($request, $form);
         }
 
-        return $this->render('MentatikUserBundle:Admin:form.html.twig',
+        return $this->templating->renderResponse('MentatikUserBundle:Admin:form.html.twig',
             array('form'=> $form->createView()));
     }
 
+    /**
+     * @Route("/user/{id}/delete", name="mentatik_user_admin_delete" )
+     * @param integer $id
+     * @Method({"DELETE"})
+     * @return Response
+     */
     public function deleteAction($id)
     {
-        $this->getUserRepository();
         $user = $this->userRepository->findOneById((int)$id);
         $this->em->remove($user);
         $this->em->flush();
-        return $this->redirectToRoute('Mentatik_user_admin_list');
+        return new RedirectResponse($this->router->generate('mentatik_user_admin_list'));
     }
 
     private function createUserForm(User $user, $buttonAction)
     {
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->formFactory->create(UserType::class, $user);
         $form->add('submit', SubmitType::class, array(
             'label' => $buttonAction
         ));
@@ -84,6 +145,6 @@ class AdminController extends Controller
             $this->em->persist($user);
             $this->em->flush();
         }
-        return $this->redirectToRoute('Mentatik_user_admin_list');
+        return new RedirectResponse($this->router->generate('mentatik_user_admin_list'));
     }
 }
